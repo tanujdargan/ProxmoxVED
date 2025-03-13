@@ -5,6 +5,9 @@
 # License: MIT | https://github.com/community-scripts/ProxmoxVED/raw/main/LICENSE
 # Source: https://github.com/ThePhaseless/Byparr
 
+# Print debugging information
+echo "VERBOSE=$VERBOSE VERB=$VERB"
+
 source /dev/stdin <<< "$FUNCTIONS_FILE_PATH"
 color
 verb_ip6
@@ -12,6 +15,17 @@ catch_errors
 setting_up_container
 network_check
 update_os
+
+# Force verbose mode for testing
+VERB=1
+# Redefine STD based on verbose setting
+if [ "$VERB" = "1" ]; then
+  STD=""
+else
+  STD=">/dev/null 2>&1"
+fi
+
+echo "After setup: VERBOSE=$VERBOSE VERB=$VERB STD=$STD"
 
 msg_info "Installing Dependencies"
 $STD apt-get update
@@ -40,17 +54,22 @@ $STD rm -f /tmp/google-key.pub
 msg_ok "Installed Chrome"
 
 msg_info "Installing UV Package Manager"
-$STD curl -LsSf https://astral.sh/uv/install.sh | sh
+echo "Starting UV installation - this might take time..."
+eval "curl -LsSf https://astral.sh/uv/install.sh | sh"
+echo "UV installation completed"
 echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
 echo 'source "$HOME/.local/bin/env"' >> ~/.bashrc
 source $HOME/.local/bin/env || true
 msg_ok "Installed UV Package Manager"
 
 msg_info "Installing Byparr"
-$STD git clone https://github.com/ThePhaseless/Byparr.git /opt/byparr
+echo "Cloning Byparr repository..."
+eval "git clone https://github.com/ThePhaseless/Byparr.git /opt/byparr"
 cd /opt/byparr
 source $HOME/.local/bin/env || true
-$STD uv sync --group test
+echo "Running uv sync - this might take time..."
+eval "uv sync --group test"
+echo "UV sync completed"
 msg_ok "Installed Byparr"
 
 msg_info "Creating Service"
@@ -90,9 +109,9 @@ motd_ssh
 customize
 
 msg_info "Setting root password"
-$STD passwd --delete root
-$STD echo -e 'root\nroot' | passwd root
-$STD echo 'root:root' | chpasswd
+eval "passwd --delete root"
+eval "echo -e 'root\nroot' | passwd root"
+eval "echo 'root:root' | chpasswd"
 msg_ok "Root password set"
 
 msg_info "Cleaning up"
