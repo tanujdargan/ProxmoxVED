@@ -41,11 +41,55 @@ start
 build_container
 description
 
+msg_info "Installing dependencies..."
+$STD apt-get update
+$STD apt-get install -y git python3 python3-pip python3-venv curl ufw
+
+msg_info "Installing Byparr..."
+$STD mkdir -p /opt/byparr
+$STD git clone https://github.com/community-scripts/Byparr.git /opt/byparr
+$STD cd /opt/byparr
+
+msg_info "Setting up Python environment..."
+$STD python3 -m venv $HOME/.local/bin/env
+$STD source $HOME/.local/bin/env
+$STD pip install uv
+$STD uv sync --group test
+
+msg_info "Creating and configuring Byparr service..."
+$STD bash -c 'cat > /etc/systemd/system/byparr.service << EOF
+[Unit]
+Description=Byparr Service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/byparr
+ExecStart=$HOME/.local/bin/env/bin/python3 app.py
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+EOF'
+
+$STD systemctl daemon-reload
+$STD systemctl enable byparr.service
+$STD systemctl start byparr.service
+
+# Set up proper credentials
+USERNAME="admin"
+PASSWORD=$(openssl rand -base64 12)
+$STD cd /opt/byparr
+$STD bash -c "echo '{\"username\":\"$USERNAME\",\"password\":\"$PASSWORD\"}' > /opt/byparr/config/credentials.json"
+
+msg_ok "Byparr installation completed successfully!"
+
 msg_ok "Completed Successfully!\n"
 echo -e "${CREATING}${GN}${APP} setup has been successfully initialized!${CL}"
 echo -e "${INFO}${YW} Access it using the following URL:${CL}"
 echo -e "${TAB}${GATEWAY}${BGN}http://${IP}:8191${CL}"
 echo -e "${INFO}${YW} Container IP address: ${IP}${CL}"
 echo -e "${INFO}${YW} Default login credentials:${CL}"
-echo -e "${TAB}${YW}Username: root${CL}"
-echo -e "${TAB}${YW}Password: root${CL}"
+echo -e "${TAB}${YW}Username: ${USERNAME}${CL}"
+echo -e "${TAB}${YW}Password: ${PASSWORD}${CL}"
