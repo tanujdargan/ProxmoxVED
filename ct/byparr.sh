@@ -5,6 +5,7 @@ source <(curl -s https://raw.githubusercontent.com/tanujdargan/ProxmoxVED/main/m
 # License: MIT | https://github.com/community-scripts/ProxmoxVE/raw/main/LICENSE
 # Source: https://github.com/ThePhaseless/Byparr
 
+# App Default Values
 APP="Byparr"
 var_tags="arr;community-script"
 var_cpu="2"
@@ -27,13 +28,13 @@ function update_script() {
         msg_error "No ${APP} Installation Found!"
         exit
     fi
-    msg_info "Updating ${APP}"
+    msg_info "Updating Byparr"
     cd /opt/byparr
     $STD git pull
-    $STD source /root/.local/bin/env
+    $STD source $HOME/.local/bin/env || true
     $STD uv sync --group test
-    $STD systemctl restart byparr.service
-    msg_ok "Updated ${APP}"
+    systemctl restart byparr.service
+    msg_ok "Updated Byparr"
     exit
 }
 
@@ -45,6 +46,7 @@ msg_ok "Completed Successfully!\n"
 echo -e "${CREATING}${GN}${APP} setup has been successfully initialized!${CL}"
 echo -e "${INFO}${YW} Access it using the following URL:${CL}"
 echo -e "${TAB}${GATEWAY}${BGN}http://${IP}:8191${CL}"
+echo -e "${INFO}${YW} Container IP address: ${IP}${CL}"
 echo -e "${INFO}${YW} Default login credentials:${CL}"
 echo -e "${TAB}${YW}Username: root${CL}"
 echo -e "${TAB}${YW}Password: root${CL}"
