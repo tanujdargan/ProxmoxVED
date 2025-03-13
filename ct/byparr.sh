@@ -41,23 +41,33 @@ start
 build_container
 description
 
+# Define STD for redirection if not defined by build.func
+if [ -z ${STD+x} ]; then
+    STD=""
+    if [[ "${VERBOSE}" == "yes" ]]; then
+        STD=""
+    else
+        STD=">/dev/null 2>&1"
+    fi
+fi
+
 msg_info "Installing dependencies..."
-$STD apt-get update
-$STD apt-get install -y git python3 python3-pip python3-venv curl ufw
+apt-get update $STD
+apt-get install -y git python3 python3-pip python3-venv curl ufw $STD
 
 msg_info "Installing Byparr..."
-$STD mkdir -p /opt/byparr
-$STD git clone https://github.com/community-scripts/Byparr.git /opt/byparr
-$STD cd /opt/byparr
+mkdir -p /opt/byparr $STD
+git clone https://github.com/community-scripts/Byparr.git /opt/byparr $STD
+cd /opt/byparr $STD
 
 msg_info "Setting up Python environment..."
-$STD python3 -m venv $HOME/.local/bin/env
-$STD source $HOME/.local/bin/env
-$STD pip install uv
-$STD uv sync --group test
+python3 -m venv $HOME/.local/bin/env $STD
+source $HOME/.local/bin/env $STD
+pip install uv $STD
+uv sync --group test $STD
 
 msg_info "Creating and configuring Byparr service..."
-$STD bash -c 'cat > /etc/systemd/system/byparr.service << EOF
+bash -c 'cat > /etc/systemd/system/byparr.service << EOF
 [Unit]
 Description=Byparr Service
 After=network.target
@@ -71,17 +81,18 @@ Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target
-EOF'
+EOF' $STD
 
-$STD systemctl daemon-reload
-$STD systemctl enable byparr.service
-$STD systemctl start byparr.service
+systemctl daemon-reload $STD
+systemctl enable byparr.service $STD
+systemctl start byparr.service $STD
 
 # Set up proper credentials
 USERNAME="admin"
 PASSWORD=$(openssl rand -base64 12)
-$STD cd /opt/byparr
-$STD bash -c "echo '{\"username\":\"$USERNAME\",\"password\":\"$PASSWORD\"}' > /opt/byparr/config/credentials.json"
+cd /opt/byparr $STD
+mkdir -p /opt/byparr/config $STD
+bash -c "echo '{\"username\":\"$USERNAME\",\"password\":\"$PASSWORD\"}' > /opt/byparr/config/credentials.json" $STD
 
 msg_ok "Byparr installation completed successfully!"
 
