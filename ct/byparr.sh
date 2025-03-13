@@ -5,8 +5,7 @@ source <(curl -s https://raw.githubusercontent.com/tanujdargan/ProxmoxVED/main/m
 # License: MIT | https://github.com/community-scripts/ProxmoxVED/raw/main/LICENSE
 # Source: https://github.com/ThePhaseless/Byparr
 
-set -e #terminate script if it fails a command
-
+# App Default Values
 APP="Byparr"
 var_tags="arr;community-script"
 var_cpu="2"
@@ -33,20 +32,20 @@ fi
 
 function update_script() {
   header_info
-    check_container_storage
-    check_container_resources
-    if [[ ! -d /opt/byparr ]]; then
-      msg_error "No ${APP} Installation Found!"
-      exit
-    fi
-    msg_info "Updating Byparr"
-    cd /opt/byparr
-    eval "git pull $REDIRECT"
-    eval "source $HOME/.local/bin/env || true"
-    eval "uv sync --group test $REDIRECT"
-    systemctl restart byparr.service
-    msg_ok "Updated Byparr"
+  check_container_storage
+  check_container_resources
+  if [[ ! -d /opt/byparr ]]; then
+    msg_error "No ${APP} Installation Found!"
     exit
+  fi
+  msg_info "Updating Byparr"
+  cd /opt/byparr
+  $STD git pull
+  $STD source $HOME/.local/bin/env || true
+  $STD uv sync --group test
+  systemctl restart byparr.service
+  msg_ok "Updated Byparr"
+  exit
 }
 
 # Override the normal build_container function with custom logic
@@ -264,14 +263,38 @@ EOF
 
 start
 build_container
+
+# Add USB passthrough configuration for privileged containers
+if [ "$CT_TYPE" == "0" ]; then
+  msg_info "Adding USB passthrough configuration"
+  LXC_CONFIG=/etc/pve/lxc/${CTID}.conf
+  cat <<EOF >>$LXC_CONFIG
+# USB passthrough
+lxc.cgroup2.devices.allow: a
+lxc.cap.drop:
+lxc.cgroup2.devices.allow: c 188:* rwm
+lxc.cgroup2.devices.allow: c 189:* rwm
+lxc.mount.entry: /dev/serial/by-id  dev/serial/by-id  none bind,optional,create=dir
+lxc.mount.entry: /dev/ttyUSB0       dev/ttyUSB0       none bind,optional,create=file
+lxc.mount.entry: /dev/ttyUSB1       dev/ttyUSB1       none bind,optional,create=file
+lxc.mount.entry: /dev/ttyACM0       dev/ttyACM0       none bind,optional,create=file
+lxc.mount.entry: /dev/ttyACM1       dev/ttyACM1       none bind,optional,create=file
+EOF
+  msg_ok "Added USB passthrough configuration"
+
+  # Restart the container to apply changes
+  msg_info "Restarting container to apply changes"
+  pct restart ${CTID}
+  sleep 5
+  msg_ok "Container restarted"
+fi
+
 description
 
-# Set password just to be sure - Use redirection to hide command output
+# Ensure root password is set properly
 msg_info "Setting root password"
 pct exec "$CTID" -- bash -c "passwd --delete root >/dev/null 2>&1 && echo -e 'root\nroot' | passwd root >/dev/null 2>&1"
 pct exec "$CTID" -- bash -c "echo 'root:root' | chpasswd >/dev/null 2>&1"
-# Add verification without showing output
-pct exec "$CTID" -- bash -c "grep -q '^root:' /etc/shadow >/dev/null 2>&1 || echo 'ERROR: Root password not set correctly'"
 msg_ok "Root password set"
 
 msg_ok "Completed Successfully!\n"

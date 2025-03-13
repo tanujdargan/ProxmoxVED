@@ -19,10 +19,24 @@ $STD apt-get install -y curl sudo mc apt-transport-https wget gpg xvfb git
 msg_ok "Installed Dependencies"
 
 msg_info "Installing Chrome"
-$STD wget -qO- https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/google-chrome.gpg
+# More reliable Chrome key handling
+$STD curl -s https://dl.google.com/linux/linux_signing_key.pub > /tmp/google-key.pub
+if [ ! -s /tmp/google-key.pub ]; then
+  $STD wget -q -O /tmp/google-key.pub https://dl.google.com/linux/linux_signing_key.pub
+fi
+
+# Verify the key file is not empty and looks valid
+if [ ! -s /tmp/google-key.pub ] || ! grep -q "BEGIN PGP PUBLIC KEY BLOCK" /tmp/google-key.pub; then
+  msg_error "Invalid or empty Google signing key"
+  exit 1
+fi
+
+# Import the key
+$STD cat /tmp/google-key.pub | gpg --dearmor -o /usr/share/keyrings/google-chrome.gpg
 echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list
 $STD apt-get update
 $STD apt-get install -y google-chrome-stable
+$STD rm -f /tmp/google-key.pub
 msg_ok "Installed Chrome"
 
 msg_info "Installing UV Package Manager"
