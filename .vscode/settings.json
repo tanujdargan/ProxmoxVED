@@ -26,7 +26,7 @@
         "--rcfile",
         ".vscode/.shellcheckrc"
     ],
-    "workbench.colorTheme": "Default Dark+",
+    "workbench.colorTheme": "Tokyo Night Dark",
     "workbench.iconTheme": "vscode-icons",
     "git.autofetch": true,
     "git.confirmSync": false,
