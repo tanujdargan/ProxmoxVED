@@ -69,8 +69,7 @@ fi
 
 # Ensure root password is set properly
 msg_info "Setting root password"
-$STD pct exec "$CTID" -- bash -c "passwd --delete root >/dev/null 2>&1 && echo -e 'root\nroot' | passwd root >/dev/null 2>&1"
-$STD pct exec "$CTID" -- bash -c "echo 'root:root' | chpasswd >/dev/null 2>&1"
+$STD pct exec "$CTID" -- bash -c "echo 'root:root' | chpasswd"
 msg_ok "Root password set"
 
 msg_ok "Completed Successfully!\n"
