@@ -69,7 +69,7 @@ fi
 
 # Ensure root password is set properly
 msg_info "Setting root password"
-$STD pct exec "$CTID" -- bash -c "echo 'root:root' | chpasswd"
+pct exec "$CTID" -- bash -c "echo 'root:root' | chpasswd" >/dev/null 2>&1
 msg_ok "Root password set"
 
 msg_ok "Completed Successfully!\n"
