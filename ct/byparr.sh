@@ -7,12 +7,13 @@ source <(curl -s https://raw.githubusercontent.com/tanujdargan/ProxmoxVED/main/m
 
 # App Default Values
 APP="Byparr"
-var_tags="arr;community-script"
+var_tags="arr;community-script" # Using semicolons, not commas
 var_cpu="2"
 var_ram="2048"
 var_disk="4"
 var_os="debian"
 var_version="12"
+var_install="install/byparr-install.sh"
 var_unprivileged="1"
 
 header_info "$APP"
@@ -39,7 +40,7 @@ function update_script() {
 }
 
 start
-build_container
+build_container # Using standard function, not custom implementation
 description
 
 msg_ok "Completed Successfully!\n"
