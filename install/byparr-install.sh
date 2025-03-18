@@ -5,7 +5,6 @@
 # License: MIT | https://github.com/community-scripts/ProxmoxVE/raw/main/LICENSE
 # Source: https://github.com/ThePhaseless/Byparr/
 
-source /dev/stdin <<<"$FUNCTIONS_FILE_PATH"
 color
 verb_ip6
 catch_errors
@@ -34,7 +33,9 @@ msg_ok "Installed Chrome"
 
 # Installing UV Package Manager
 msg_info "Installing UV Package Manager"
-$STD curl -LsSf https://astral.sh/uv/install.sh | sh
+$STD curl -LsSf -o /tmp/uv-install.sh https://astral.sh/uv/install.sh
+$STD chmod +x /tmp/uv-install.sh
+$STD /tmp/uv-install.sh
 # Make sure we source the env file properly
 echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
 echo 'source "$HOME/.local/bin/env"' >> ~/.bashrc
@@ -69,7 +70,7 @@ RestartSec=10
 WantedBy=multi-user.target
 EOF
 
-systemctl enable -q --now byparr.service
+$STD systemctl enable -q --now byparr.service
 msg_ok "Created Service"
 
 motd_ssh
@@ -78,4 +79,5 @@ customize
 msg_info "Cleaning up"
 $STD apt-get -y autoremove
 $STD apt-get -y autoclean
+$STD rm -f /tmp/uv-install.sh
 msg_ok "Cleaned"
