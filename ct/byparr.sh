@@ -5,7 +5,8 @@ source <(curl -s https://raw.githubusercontent.com/community-scripts/ProxmoxVED/
 # License: MIT | https://github.com/community-scripts/ProxmoxVE/raw/main/LICENSE
 # Source: https://github.com/ThePhaseless/Byparr/
 
-APP="Byparr"var_tags="arr;community-script"
+APP="Byparr"
+var_tags="arr;community-script"
 var_cpu="2"
 var_ram="2048"
 var_disk="8"
