@@ -5,6 +5,7 @@
 # License: MIT | https://github.com/community-scripts/ProxmoxVE/raw/main/LICENSE
 # Source: https://github.com/ThePhaseless/Byparr/
 
+source /dev/stdin <<< "$FUNCTIONS_FILE_PATH"
 color
 verb_ip6
 catch_errors
