@@ -55,7 +55,7 @@ build_container
 
 # Add debugging info here
 msg_info "Checking for installation script"
-$STD curl -s -I https://raw.githubusercontent.com/community-scripts/ProxmoxVED/main/install/byparr-install.sh
+$STD curl -s -I https://raw.githubusercontent.com/tanujdargan/ProxmoxVED/main/install/byparr-install.sh
 $STD ls -la /usr/local/community-scripts/logs/
 $STD cat /usr/local/community-scripts/logs/$(date '+%Y-%m-%d')_byparr.log
 
